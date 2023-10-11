@@ -17,6 +17,7 @@
 #include "button.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 #define bulletCount 50
 
@@ -52,7 +53,7 @@ void game_init(void)
 	load_purple_palette(purples);
 	load_blues_palette(blues);
 
-	turretPos = CP_Vector_Set(CP_System_GetWindowWidth() / 2.0f, CP_System_GetWindowHeight() + 15.0f);
+	turretPos = CP_Vector_Set(CP_System_GetWindowWidth() / 2.0f, CP_System_GetWindowHeight() - 400.0f);
 
 	for (int i = 0; i < bulletCount; i++) {
 		bullets[i].isAlive = 0;
@@ -65,6 +66,9 @@ void game_update(void)
 	aim = CP_Vector_Subtract(mousePos, turretPos);
 	aim.y = -aim.y;
 	degrees = CP_Vector_Angle(aim, CP_Vector_Set(10, 0));
+	if (mousePos.y > turretPos.y) {
+		degrees = -degrees;
+	}
 
 	CP_Graphics_ClearBackground(gray[2]);
 
@@ -88,7 +92,7 @@ void game_update(void)
 	//	
 	//}
 	//bullets
-	if (CP_Input_MouseClicked()) {
+	if (CP_Input_MouseClicked() || CP_Input_KeyTriggered(KEY_SPACE)) {
 		for (int i = 0; i < bulletCount; i++) {
 			if (bullets[i].isAlive == 0) {
 				bullets[i].isAlive = 1;
@@ -98,7 +102,7 @@ void game_update(void)
 			}
 		}
 	}
-	for (int i = 0; i < bulletCount; i++) {
+	for (int i = 0; i < _countof(bullets); i++) {  //uses count of
 		if (bullets[i].isAlive == 1) {
 
 			bullets[i].position.x += bullets[i].velocity.x * 50.0f;
@@ -115,9 +119,12 @@ void game_update(void)
 	CP_Settings_Fill(gray[8]);
 	CP_Graphics_DrawEllipse(turretPos.x, turretPos.y, 150.0f, 150.0f);
 
-	CP_Graphics_DrawRectAdvanced(turretPos.x, turretPos.y, 250.0f, 30.0f, -degrees, 0.0f);
+	//CP_Graphics_DrawRectAdvanced(turretPos.x, turretPos.y, 250.0f, 30.0f, -degrees, 0.0f);
+	//CP_Settings_Fill(purples[1]);
+	CP_Graphics_DrawRectAdvanced(turretPos.x + 80.0f * cosf(degrees * (3.141592654f / 180.0f)), turretPos.y + 80.0f * -sinf(degrees * (3.141592654f / 180.0f)), 60.0f, 30.0f, -degrees, 0.0f);
 
 	
+	//CP_Graphics_DrawRect(turretPos.x + 30.0f * cosf(degrees * (3.141592654f / 180.0f)), turretPos.y + 30.0f * -sinf(degrees * (3.141592654f / 180.0f)), 100.0f, 100.0f);
 	
 
 
@@ -135,6 +142,10 @@ void game_update(void)
 	char buffer2[50] = { 0 };
 	sprintf_s(buffer2, _countof(buffer2), "isalive: %i", bullets[0].isAlive);
 	CP_Font_DrawText(buffer2, 300, 50);
+
+	char buffer4[50] = { 0 };
+	sprintf_s(buffer4, _countof(buffer4), "rot: %i", (int)degrees);
+	CP_Font_DrawText(buffer4, 300, 90);
 
 }
 
